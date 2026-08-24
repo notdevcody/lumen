@@ -62,32 +62,6 @@ public class DisplaySdl {
     private int textInputHeight;
     private int textInputCursor;
 
-    private DisplaySdl() {
-        SDL_SetMemoryFunctions(
-            MemoryUtil::nmemAllocChecked,
-            MemoryUtil::nmemCallocChecked,
-            MemoryUtil::nmemReallocChecked,
-            MemoryUtil::nmemFree
-        );
-
-        checkSdlError(SDLHints.SDL_SetHint(SDLHints.SDL_HINT_MAC_BACKGROUND_APP, "0"));
-        checkSdlError(SDLHints.SDL_SetHint(SDLHints.SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1"));
-        checkSdlError(SDL_SetAppMetadata(
-            "Minecraft",
-            FabricLoader.getInstance().getModContainer("minecraft").orElseThrow(IllegalStateException::new)
-                .getMetadata().getVersion().getFriendlyString(),
-            "com.mojang.minecraft"
-        ));
-        checkSdlError(SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_URL_STRING, "https://minecraft.net"));
-        checkSdlError(SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_CREATOR_STRING, "Mojang AB"));
-        checkSdlError(SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_COPYRIGHT_STRING, "Minecraft EULA: https://minecraft.net/eula"));
-        checkSdlError(SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_TYPE_STRING, "game"));
-
-        if (!SDL_Init(SDL_INIT_VIDEO)) {
-            throw new IllegalStateException("Unable to initialize SDL" + SDL_GetError());
-        }
-    }
-
     public static DisplaySdl instance() {
         return INSTANCE;
     }
@@ -324,6 +298,31 @@ public class DisplaySdl {
         if (isCreated()) {
             throw new IllegalStateException("Display has already been created");
         }
+
+        SDL_SetMemoryFunctions(
+            MemoryUtil::nmemAllocChecked,
+            MemoryUtil::nmemCallocChecked,
+            MemoryUtil::nmemReallocChecked,
+            MemoryUtil::nmemFree
+        );
+
+        checkSdlError(SDLHints.SDL_SetHint(SDLHints.SDL_HINT_MAC_BACKGROUND_APP, "0"));
+        checkSdlError(SDLHints.SDL_SetHint(SDLHints.SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1"));
+        checkSdlError(SDL_SetAppMetadata(
+            "Minecraft",
+            FabricLoader.getInstance().getModContainer("minecraft").orElseThrow(IllegalStateException::new)
+                .getMetadata().getVersion().getFriendlyString(),
+            "com.mojang.minecraft"
+        ));
+        checkSdlError(SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_URL_STRING, "https://minecraft.net"));
+        checkSdlError(SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_CREATOR_STRING, "Mojang AB"));
+        checkSdlError(SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_COPYRIGHT_STRING, "Minecraft EULA: https://minecraft.net/eula"));
+        checkSdlError(SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_TYPE_STRING, "game"));
+
+        if (!SDL_Init(SDL_INIT_VIDEO)) {
+            throw new IllegalStateException("Unable to initialize SDL" + SDL_GetError());
+        }
+
         GpuSurface surface = this.surface != null ? this.surface : fallbackSurface;
         this.surface = surface;
         windowedWidth = width;

@@ -4,7 +4,7 @@ feather_build = "1"
 loader = "0.19.3"
 loom = "1.17.19"
 ploceus = "1.17.7"
-lwjgl = "3.4.2"
+lwjgl = "3.4.3"
 
 [libraries]
 minecraft = { module = "com.mojang:minecraft", version.ref = "minecraft" }
