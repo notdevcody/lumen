@@ -30,8 +30,8 @@ import static org.lwjgl.system.MemoryUtil.memAddress;
 public class DisplaySdl {
     private static final DisplaySdl INSTANCE = new DisplaySdl();
 
-    private final SDL_Event event = SDL_Event.calloc();
-    private final SDL_WindowEvent windowEvent = event.window();
+    private SDL_Event event;
+    private SDL_WindowEvent windowEvent;
     private final Drawable drawable = new SurfaceDrawable();
 
     private long handle = -1L;
@@ -82,6 +82,11 @@ public class DisplaySdl {
     }
 
     SDL_Event getEvent() {
+        if (event == null) {
+            event = SDL_Event.calloc();
+            windowEvent = event.window();
+        }
+
         return event;
     }
 
@@ -446,7 +451,11 @@ public class DisplaySdl {
         if (SDL_WasInit(SDL_INIT_VIDEO) != 0) {
             SDL_QuitSubSystem(SDL_INIT_VIDEO);
         }
-        event.free();
+        if (event != null) {
+            event.free();
+            event = null;
+            windowEvent = null;
+        }
         SDL_Quit();
         try (MemoryStack stack = stackPush()) {
             PointerBuffer funcs = stack.mallocPointer(4);

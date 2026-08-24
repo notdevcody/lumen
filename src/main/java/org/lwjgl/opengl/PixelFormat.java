@@ -1,7 +1,7 @@
 package org.lwjgl.opengl;
 
 @SuppressWarnings("unused")
-public final class PixelFormat implements PixelFormatLWJGL {
+public final class PixelFormat {
     private int bpp;
     private int alpha;
     private int depth;
