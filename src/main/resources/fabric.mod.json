@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "lumen",
+  "version": "${version}",
+  "name": "Lumen",
+  "icon": "assets/lumen/icon.png",
+  "authors": [ "notdevcody" ],
+  "license": "LGPL-3.0-only",
+  "environment": "client",
+  "entrypoints": {
+    "preLaunch": [
+      "pl.tomgirl.lumen.PreLaunch"
+    ]
+  },
+  "mixins": [
+    "lwjgl.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.17.3",
+    "minecraft": "<1.13.0-alpha.17.43.a"
+  }
+}

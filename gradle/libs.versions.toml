@@ -1,0 +1,19 @@
+[versions]
+minecraft = "1.8.9"
+feather_build = "1"
+loader = "0.19.3"
+loom = "1.17.19"
+ploceus = "1.17.7"
+lwjgl = "3.4.2"
+
+[libraries]
+minecraft = { module = "com.mojang:minecraft", version.ref = "minecraft" }
+loader = { module = "net.fabricmc:fabric-loader", version.ref = "loader" }
+lwjgl = { module = "org.lwjgl:lwjgl", version.ref = "lwjgl" }
+lwjgl-opengl = { module = "org.lwjgl:lwjgl-opengl", version.ref = "lwjgl" }
+lwjgl-openal = { module = "org.lwjgl:lwjgl-openal", version.ref = "lwjgl" }
+lwjgl-sdl = { module = "org.lwjgl:lwjgl-sdl", version.ref = "lwjgl" }
+
+[plugins]
+ploceus = { id = "ploceus", version.ref = "ploceus" }
+loom = { id = "net.fabricmc.fabric-loom-remap", version.ref = "loom" }

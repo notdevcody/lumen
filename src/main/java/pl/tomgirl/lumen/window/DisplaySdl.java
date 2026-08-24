@@ -1,0 +1,535 @@
+package pl.tomgirl.lumen.window;
+
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+import java.util.Arrays;
+
+import org.lwjgl.opengl.DisplayMode;
+import org.lwjgl.opengl.Drawable;
+import pl.tomgirl.lumen.Lumen;
+import net.fabricmc.loader.api.FabricLoader;
+import org.jetbrains.annotations.NotNull;
+import org.lwjgl.LWJGLException;
+import org.lwjgl.PointerBuffer;
+import org.lwjgl.input.Keyboard;
+import org.lwjgl.input.Mouse;
+import org.lwjgl.sdl.*;
+import org.lwjgl.system.Callback;
+import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
+
+import static org.lwjgl.sdl.SDLError.SDL_GetError;
+import static org.lwjgl.sdl.SDLEvents.*;
+import static org.lwjgl.sdl.SDLInit.*;
+import static org.lwjgl.sdl.SDLStdinc.SDL_SetMemoryFunctions;
+import static org.lwjgl.sdl.SDLStdinc.nSDL_GetMemoryFunctions;
+import static org.lwjgl.sdl.SDLVideo.*;
+import static org.lwjgl.system.MemoryStack.stackPush;
+import static org.lwjgl.system.MemoryUtil.memAddress;
+
+public class DisplaySdl {
+    private static final DisplaySdl INSTANCE = new DisplaySdl();
+
+    private final SDL_Event event = SDL_Event.calloc();
+    private final SDL_WindowEvent windowEvent = event.window();
+    private final Drawable drawable = new SurfaceDrawable();
+
+    private long handle = -1L;
+    private GpuSurface surface;
+    private String title = "";
+    private ByteBuffer[] cachedIcons;
+
+    private int width = 640;
+    private int height = 480;
+    private int framebufferWidth = 640;
+    private int framebufferHeight = 480;
+    private int windowedWidth;
+    private int windowedHeight;
+
+    private boolean resizable;
+    private boolean windowResized = true;
+    private boolean minimized;
+    private boolean fullscreen;
+    private boolean fullscreenDeferred;
+    private boolean focused;
+    private boolean closeRequested;
+
+    private boolean textInputRequested;
+    private boolean textInputActive;
+    private int textInputX = -1;
+    private int textInputY;
+    private int textInputWidth;
+    private int textInputHeight;
+    private int textInputCursor;
+
+    private DisplaySdl() {
+        SDL_SetMemoryFunctions(
+            MemoryUtil::nmemAllocChecked,
+            MemoryUtil::nmemCallocChecked,
+            MemoryUtil::nmemReallocChecked,
+            MemoryUtil::nmemFree
+        );
+
+        checkSdlError(SDLHints.SDL_SetHint(SDLHints.SDL_HINT_MAC_BACKGROUND_APP, "0"));
+        checkSdlError(SDLHints.SDL_SetHint(SDLHints.SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1"));
+        checkSdlError(SDL_SetAppMetadata(
+            "Minecraft",
+            FabricLoader.getInstance().getModContainer("minecraft").orElseThrow(IllegalStateException::new)
+                .getMetadata().getVersion().getFriendlyString(),
+            "com.mojang.minecraft"
+        ));
+        checkSdlError(SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_URL_STRING, "https://minecraft.net"));
+        checkSdlError(SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_CREATOR_STRING, "Mojang AB"));
+        checkSdlError(SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_COPYRIGHT_STRING, "Minecraft EULA: https://minecraft.net/eula"));
+        checkSdlError(SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_TYPE_STRING, "game"));
+
+        if (!SDL_Init(SDL_INIT_VIDEO)) {
+            throw new IllegalStateException("Unable to initialize SDL" + SDL_GetError());
+        }
+    }
+
+    public static DisplaySdl instance() {
+        return INSTANCE;
+    }
+
+    public void setSurface(@NotNull GpuSurface surface) {
+        if (isCreated()) {
+            throw new IllegalStateException("Cannot replace the surface after display creation");
+        }
+        this.surface = surface;
+    }
+
+    public long getHandle() {
+        return handle;
+    }
+
+    public boolean isCloseRequested() {
+        return closeRequested;
+    }
+
+    SDL_Event getEvent() {
+        return event;
+    }
+
+    public Drawable getDrawable() {
+        return drawable;
+    }
+
+    public void setTextInputActive(boolean active) {
+        if (handle > 0 && textInputActive) {
+            checkSdlError(SDLKeyboard.SDL_ClearComposition(handle));
+        }
+        textInputX = -1;
+        textInputRequested = active;
+        updateTextInputState();
+    }
+
+    public void setTextInputArea(int x, int y, int width, int height, int cursor, int guiWidth, int guiHeight) {
+        if (handle <= 0 || guiWidth <= 0 || guiHeight <= 0) {
+            return;
+        }
+
+        int areaX = Math.round((float) x * this.width / guiWidth);
+        int areaY = Math.round((float) y * this.height / guiHeight);
+        int areaWidth = Math.max(1, Math.round((float) width * this.width / guiWidth));
+        int areaHeight = Math.max(1, Math.round((float) height * this.height / guiHeight));
+        int areaCursor = Math.round((float) cursor * this.width / guiWidth);
+        if (areaX == textInputX && areaY == textInputY && areaWidth == textInputWidth &&
+            areaHeight == textInputHeight && areaCursor == textInputCursor) {
+            return;
+        }
+        try (MemoryStack stack = stackPush()) {
+            SDL_Rect.Buffer area = SDL_Rect.calloc(1, stack)
+                .x(areaX).y(areaY).w(areaWidth).h(areaHeight);
+            checkSdlError(SDLKeyboard.SDL_SetTextInputArea(handle, area, areaCursor));
+        }
+        textInputX = areaX;
+        textInputY = areaY;
+        textInputWidth = areaWidth;
+        textInputHeight = areaHeight;
+        textInputCursor = areaCursor;
+    }
+
+    private void updateTextInputState() {
+        if (handle <= 0 || textInputActive == textInputRequested) {
+            return;
+        }
+
+        if (textInputRequested) {
+            checkSdlError(SDLKeyboard.SDL_StartTextInput(handle));
+        } else {
+            SDLKeyboard.SDL_StopTextInput(handle);
+        }
+        textInputActive = textInputRequested;
+        textInputX = -1;
+    }
+
+    @NotNull
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(@NotNull String title) {
+        this.title = title;
+        if (isCreated()) {
+            SDL_SetWindowTitle(handle, title);
+        }
+    }
+
+    @NotNull
+    public DisplayMode getDisplayMode() {
+        return new DisplayMode(framebufferWidth, framebufferHeight, 24, 60);
+    }
+
+    public void setDisplayMode(@NotNull DisplayMode mode) {
+        framebufferWidth = width = windowedWidth = mode.getWidth();
+        framebufferHeight = height = windowedHeight = mode.getHeight();
+        windowResized = true;
+    }
+
+    public int getWidth() {
+        return framebufferWidth;
+    }
+
+    public int getHeight() {
+        return framebufferHeight;
+    }
+
+    @SuppressWarnings("resource")
+    public DisplayMode getDesktopDisplayMode() {
+        var mode = SDL_GetDesktopDisplayMode(SDL_GetPrimaryDisplay());
+        if (mode == null) {
+            DisplayMode best = null;
+            for (DisplayMode displayMode : getAvailableDisplayModes()) {
+                if (best == null || displayMode.getWidth() * displayMode.getHeight() > best.getWidth() * best.getHeight()) {
+                    best = displayMode;
+                }
+            }
+            return best;
+        }
+        return new DisplayMode(
+            mode.w(), mode.h(),
+            SDL_PixelFormatDetails.nbits_per_pixel(SDLPixels.nSDL_GetPixelFormatDetails(mode.format())),
+            (int) mode.refresh_rate()
+        );
+    }
+
+    public int setIcon(@NotNull ByteBuffer[] icons) {
+        if (!Arrays.equals(cachedIcons, icons)) {
+            cachedIcons = Arrays.stream(icons).map(buf -> {
+                ByteBuffer copy = ByteBuffer.allocate(buf.remaining());
+                copy.put(buf.duplicate());
+                copy.flip();
+                return copy;
+            }).toArray(ByteBuffer[]::new);
+        }
+
+        if (!isCreated() || cachedIcons == null || cachedIcons.length == 0) {
+            return 0;
+        }
+
+        ByteBuffer icon = cachedIcons[0];
+        int size = iconSize(icon);
+        for (int i = 1; i < cachedIcons.length; i++) {
+            int currentSize = iconSize(cachedIcons[i]);
+            if (currentSize > size) {
+                icon = cachedIcons[i];
+                size = currentSize;
+            }
+        }
+
+        ByteBuffer pixels = MemoryUtil.memAlloc(icon.remaining());
+        try {
+            pixels.put(icon.duplicate()).flip();
+            try (var surface = SDLSurface.SDL_CreateSurfaceFrom(
+                size, size, SDLPixels.SDL_PIXELFORMAT_RGBA32, pixels, size * 4
+            )) {
+                checkSdlError(surface != null);
+                checkSdlError(SDL_SetWindowIcon(handle, surface));
+            }
+        } finally {
+            MemoryUtil.memFree(pixels);
+        }
+        return 1;
+    }
+
+    private static int iconSize(ByteBuffer icon) {
+        int pixels = icon.remaining() / 4;
+        int size = (int) Math.sqrt(pixels);
+        if (size == 0 || size * size != pixels || icon.remaining() % 4 != 0) {
+            throw new IllegalArgumentException("Icon must be a square RGBA image");
+        }
+        return size;
+    }
+
+    public void update() {
+        swapBuffers();
+        processMessages();
+    }
+
+    public void processMessages() {
+        windowResized = false;
+        while (SDL_PollEvent(event)) {
+            switch (event.type()) {
+                case SDL_EVENT_QUIT, SDL_EVENT_WINDOW_CLOSE_REQUESTED -> closeRequested = true;
+                case SDL_EVENT_WINDOW_FOCUS_GAINED -> focused = true;
+                case SDL_EVENT_WINDOW_FOCUS_LOST -> {
+                    focused = false;
+                    long nanos = windowEvent.timestamp();
+                    if (Keyboard.isCreated()) {
+                        KeyboardSdl.instance().releaseAll(nanos);
+                    }
+                    if (Mouse.isCreated()) {
+                        MouseSdl.instance().releaseAll(nanos);
+                    }
+                }
+                case SDL_EVENT_WINDOW_SHOWN, SDL_EVENT_WINDOW_RESTORED, SDL_EVENT_WINDOW_MAXIMIZED -> minimized = false;
+                case SDL_EVENT_WINDOW_HIDDEN, SDL_EVENT_WINDOW_MINIMIZED -> minimized = true;
+                case SDL_EVENT_WINDOW_RESIZED -> resizeCallback(handle, windowEvent.data1(), windowEvent.data2());
+                case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED ->
+                        onFramebufferResize(handle, windowEvent.data1(), windowEvent.data2());
+                case SDL_EVENT_WINDOW_ENTER_FULLSCREEN -> {
+                    fullscreen = true;
+                    windowResized = true;
+                }
+                case SDL_EVENT_WINDOW_LEAVE_FULLSCREEN -> {
+                    fullscreen = false;
+                    windowResized = true;
+                }
+                case SDL_EVENT_KEY_DOWN, SDL_EVENT_KEY_UP, SDL_EVENT_TEXT_INPUT, SDL_EVENT_TEXT_EDITING,
+                     SDL_EVENT_TEXT_EDITING_CANDIDATES -> {
+                    if (Keyboard.isCreated()) {
+                        KeyboardSdl.instance().processKeyboardEvent(event);
+                    }
+                }
+                case SDL_EVENT_MOUSE_BUTTON_DOWN, SDL_EVENT_MOUSE_BUTTON_UP, SDL_EVENT_MOUSE_MOTION,
+                     SDL_EVENT_MOUSE_WHEEL, SDL_EVENT_WINDOW_MOUSE_ENTER, SDL_EVENT_WINDOW_MOUSE_LEAVE -> {
+                    if (Mouse.isCreated()) {
+                        MouseSdl.instance().processMouseEvent(event);
+                    }
+                }
+            }
+        }
+        Keyboard.poll();
+        Mouse.poll();
+    }
+
+    private static void checkSdlError(boolean success) {
+        if (!success) {
+            throw new IllegalStateException("SDL error encountered: " + SDL_GetError());
+        }
+    }
+
+    public void create(@NotNull GpuSurface fallbackSurface) throws LWJGLException {
+        if (isCreated()) {
+            throw new IllegalStateException("Display has already been created");
+        }
+        GpuSurface surface = this.surface != null ? this.surface : fallbackSurface;
+        this.surface = surface;
+        windowedWidth = width;
+        windowedHeight = height;
+        try {
+            handle = surface.createWindow(title, width, height, resizable);
+        } catch (RuntimeException | Error throwable) {
+            surface.destroy();
+            this.surface = null;
+            handle = -1L;
+            throw throwable;
+        }
+
+        try (MemoryStack ms = stackPush()) {
+            setFullscreen(fullscreenDeferred);
+
+            IntBuffer width = ms.mallocInt(1);
+            IntBuffer height = ms.mallocInt(1);
+            checkSdlError(SDL_GetWindowSizeInPixels(handle, width, height));
+            framebufferWidth = Math.max(1, width.get(0));
+            framebufferHeight = Math.max(1, height.get(0));
+        }
+
+        Mouse.create();
+        Keyboard.create();
+        checkSdlError(SDL_ShowWindow(handle));
+        checkSdlError(SDL_RaiseWindow(handle));
+        focused = (SDL_GetWindowFlags(handle) & SDL_WINDOW_INPUT_FOCUS) != 0;
+        updateTextInputState();
+        if (cachedIcons != null) {
+            setIcon(cachedIcons);
+        }
+    }
+
+    private void onFramebufferResize(long window, int framebufferWidth, int framebufferHeight) {
+        if (window != handle) {
+            return;
+        }
+
+        if (framebufferWidth == 0 || framebufferHeight == 0) {
+            minimized = true;
+            return;
+        }
+
+        minimized = false;
+        if (this.framebufferWidth != framebufferWidth || this.framebufferHeight != framebufferHeight) {
+            this.framebufferWidth = framebufferWidth;
+            this.framebufferHeight = framebufferHeight;
+            windowResized = true;
+        }
+    }
+
+    public void setFullscreen(boolean fullscreen) {
+        if (!isCreated()) {
+            fullscreenDeferred = fullscreen;
+            return;
+        }
+
+        try {
+            if (fullscreen) {
+                int display = SDL_GetPrimaryDisplay();
+                if (display == 0) {
+                    Lumen.LOG.warn("Failed to find display");
+                    return;
+                }
+                if (!this.fullscreen) {
+                    windowedWidth = width;
+                    windowedHeight = height;
+                }
+            } else {
+                width = windowedWidth;
+                height = windowedHeight;
+            }
+            SDL_SetWindowFullscreen(handle, fullscreen);
+            SDL_SetWindowSize(handle, windowedWidth, windowedHeight);
+            windowResized = true;
+        } catch (Throwable t) {
+            Lumen.LOG.warn("Failed to set fullscreen: ", t);
+        }
+    }
+
+    @NotNull
+    public DisplayMode[] getAvailableDisplayModes() {
+        int currDisplay = handle != 0 ? SDL_GetDisplayForWindow(handle) : 0;
+        if (currDisplay == 0) {
+            currDisplay = SDL_GetPrimaryDisplay();
+        }
+        if (currDisplay == 0) {
+            return new DisplayMode[0];
+        }
+
+        var buf = SDL_GetFullscreenDisplayModes(currDisplay);
+        if (buf == null) {
+            throw new IllegalStateException("No display modes found");
+        }
+
+        DisplayMode[] modes = new DisplayMode[buf.limit()];
+        for (int i = 0; i < modes.length; i++) {
+            long mode = buf.get(i);
+            modes[i] = new DisplayMode(
+                SDL_DisplayMode.nw(mode), SDL_DisplayMode.nh(mode),
+                SDL_PixelFormatDetails.nbits_per_pixel(SDLPixels.nSDL_GetPixelFormatDetails(SDL_DisplayMode.nformat(mode))),
+                (int) SDL_DisplayMode.nrefresh_rate(mode)
+            );
+        }
+        return modes;
+    }
+
+    public void destroy() {
+        Keyboard.destroy();
+        Mouse.destroy();
+        if (handle > 0) {
+            setTextInputActive(false);
+        }
+        if (surface != null) {
+            surface.destroy();
+            surface = null;
+        }
+        handle = -1L;
+        textInputX = -1;
+        if (SDL_WasInit(SDL_INIT_VIDEO) != 0) {
+            SDL_QuitSubSystem(SDL_INIT_VIDEO);
+        }
+        event.free();
+        SDL_Quit();
+        try (MemoryStack stack = stackPush()) {
+            PointerBuffer funcs = stack.mallocPointer(4);
+
+            nSDL_GetMemoryFunctions(
+                memAddress(funcs, 0),
+                memAddress(funcs, 1),
+                memAddress(funcs, 2),
+                memAddress(funcs, 3)
+            );
+
+            for (int i = 0; i < 4; i++) {
+                Callback.free(funcs.get(i));
+            }
+        }
+    }
+
+    public boolean isCreated() {
+        return handle > 0;
+    }
+
+    public boolean isActive() {
+        return focused;
+    }
+
+    public void setResizable(boolean isResizable) {
+        resizable = isResizable;
+        if (isCreated()) {
+            SDL_SetWindowResizable(handle, resizable);
+        }
+    }
+
+    public void setVSyncEnabled(boolean enabled) {
+        if (surface != null) {
+            surface.setVSyncEnabled(enabled);
+        }
+    }
+
+    public boolean wasResized() {
+        return windowResized;
+    }
+
+    public boolean isVisible() {
+        return !minimized;
+    }
+
+    private void resizeCallback(long window, int width, int height) {
+        if (window == handle) {
+            windowResized = true;
+            this.width = width;
+            this.height = height;
+        }
+    }
+
+    public void makeCurrent() {
+        requireSurface().makeCurrent();
+    }
+
+    public void swapBuffers() {
+        requireSurface().swapBuffers();
+    }
+
+    private GpuSurface requireSurface() {
+        if (surface == null) {
+            throw new IllegalStateException("Display has not been created");
+        }
+        return surface;
+    }
+
+    private final class SurfaceDrawable implements Drawable {
+        @Override
+        public void makeCurrent() {
+            DisplaySdl.this.makeCurrent();
+        }
+
+        @Override
+        public void releaseContext() {
+            requireSurface().releaseCurrent();
+        }
+
+        @Override
+        public void destroy() {
+        }
+    }
+}
