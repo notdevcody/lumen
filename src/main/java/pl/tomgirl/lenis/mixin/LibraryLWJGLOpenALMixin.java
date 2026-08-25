@@ -1,4 +1,4 @@
-package pl.tomgirl.lumen.mixin;
+package pl.tomgirl.lenis.mixin;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;

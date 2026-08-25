@@ -1,4 +1,4 @@
-package pl.tomgirl.lumen.mixin.game;
+package pl.tomgirl.lenis.mixin.game;
 
 import net.minecraft.client.Minecraft;
 import org.lwjgl.opengl.Display;

@@ -1,4 +1,4 @@
-package pl.tomgirl.lumen;
+package pl.tomgirl.lenis;
 
 import java.io.IOException;
 import java.net.URI;
@@ -29,7 +29,7 @@ public enum Platform {
             process.getErrorStream().close();
             process.getOutputStream().close();
         } catch (IOException e) {
-            Lumen.LOG.error("Couldn't open uri '{}'", uri, e);
+            Lenis.LOG.error("Couldn't open uri '{}'", uri, e);
         }
     }
 

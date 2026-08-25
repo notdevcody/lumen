@@ -1,19 +1,19 @@
 {
   "schemaVersion": 1,
-  "id": "lumen",
+  "id": "lenis",
   "version": "${version}",
-  "name": "Lumen",
-  "icon": "assets/lumen/icon.png",
+  "name": "Lenis",
+  "icon": "assets/lenis/icon.png",
   "authors": [ "notdevcody" ],
   "license": "LGPL-3.0-only",
   "environment": "client",
   "entrypoints": {
     "preLaunch": [
-      "pl.tomgirl.lumen.PreLaunch"
+      "pl.tomgirl.lenis.PreLaunch"
     ]
   },
   "mixins": [
-    "lwjgl.mixins.json"
+    "lenis.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.17.3",

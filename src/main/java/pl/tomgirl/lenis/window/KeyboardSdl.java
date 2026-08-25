@@ -1,10 +1,10 @@
-package pl.tomgirl.lumen.window;
+package pl.tomgirl.lenis.window;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Objects;
 
-import pl.tomgirl.lumen.Lumen;
+import pl.tomgirl.lenis.Lenis;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.sdl.*;
 
@@ -108,7 +108,7 @@ public class KeyboardSdl {
         if (translated != Keymap.UNMAPPED) {
             return translated;
         }
-        Lumen.LOG.warn("Untranslated key: {} ({})", key, SDLKeyboard.SDL_GetScancodeName(key));
+        Lenis.LOG.warn("Untranslated key: {} ({})", key, SDLKeyboard.SDL_GetScancodeName(key));
         return Keyboard.KEY_NONE;
     }
 

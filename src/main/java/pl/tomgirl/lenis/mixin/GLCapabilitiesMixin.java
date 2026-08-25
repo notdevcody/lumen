@@ -1,4 +1,4 @@
-package pl.tomgirl.lumen.mixin;
+package pl.tomgirl.lenis.mixin;
 
 import java.util.Set;
 import java.util.function.IntFunction;

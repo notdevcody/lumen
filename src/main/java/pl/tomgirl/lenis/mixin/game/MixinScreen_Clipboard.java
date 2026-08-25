@@ -1,4 +1,4 @@
-package pl.tomgirl.lumen.mixin.game;
+package pl.tomgirl.lenis.mixin.game;
 
 import net.minecraft.client.gui.screen.Screen;
 import org.lwjgl.sdl.SDLClipboard;

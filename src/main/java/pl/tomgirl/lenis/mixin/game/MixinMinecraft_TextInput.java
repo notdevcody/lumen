@@ -1,8 +1,8 @@
-package pl.tomgirl.lumen.mixin.game;
+package pl.tomgirl.lenis.mixin.game;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
-import pl.tomgirl.lumen.window.DisplaySdl;
+import pl.tomgirl.lenis.window.DisplaySdl;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

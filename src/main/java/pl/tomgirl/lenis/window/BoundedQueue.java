@@ -1,4 +1,4 @@
-package pl.tomgirl.lumen.window;
+package pl.tomgirl.lenis.window;
 
 import java.util.function.Supplier;
 

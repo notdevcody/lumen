@@ -10,7 +10,7 @@ import org.lwjgl.LWJGLException;
 import org.lwjgl.Sys;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.sdl.SDLKeyboard;
-import pl.tomgirl.lumen.window.KeyboardSdl;
+import pl.tomgirl.lenis.window.KeyboardSdl;
 
 @SuppressWarnings("unused")
 public class Keyboard {

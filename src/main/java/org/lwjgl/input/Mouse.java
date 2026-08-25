@@ -3,7 +3,7 @@ package org.lwjgl.input;
 import java.util.HashMap;
 import java.util.Map;
 
-import pl.tomgirl.lumen.window.MouseSdl;
+import pl.tomgirl.lenis.window.MouseSdl;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.Sys;
 import org.lwjgl.opengl.Display;

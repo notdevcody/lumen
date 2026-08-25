@@ -1,8 +1,8 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "pl.tomgirl.lumen.mixin",
-  "plugin": "pl.tomgirl.lumen.plugin.PaulscodeClasspathPlugin",
+  "package": "pl.tomgirl.lenis.mixin",
+  "plugin": "pl.tomgirl.lenis.plugin.PaulscodeClasspathPlugin",
   "compatibilityLevel": "JAVA_17",
   "client": [
     "AL10Mixin",

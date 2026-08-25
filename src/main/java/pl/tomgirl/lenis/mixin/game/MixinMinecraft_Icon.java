@@ -1,12 +1,12 @@
-package pl.tomgirl.lumen.mixin.game;
+package pl.tomgirl.lenis.mixin.game;
 
 import net.minecraft.client.Minecraft;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import pl.tomgirl.lumen.Lumen;
-import pl.tomgirl.lumen.window.DisplaySdl;
+import pl.tomgirl.lenis.Lenis;
+import pl.tomgirl.lenis.window.DisplaySdl;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -18,7 +18,7 @@ import java.nio.ByteBuffer;
 public class MixinMinecraft_Icon {
     @Inject(method = "initIcon", at = @At("HEAD"), cancellable = true)
     private void initIcon(CallbackInfo ci) {
-        try (InputStream stream = Lumen.class.getResourceAsStream("/icon_256x.png")) {
+        try (InputStream stream = Lenis.class.getResourceAsStream("/icon_256x.png")) {
             if (stream == null) {
                 throw new IllegalStateException("Missing default icon");
             }

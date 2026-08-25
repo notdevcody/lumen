@@ -1,4 +1,4 @@
-package pl.tomgirl.lumen.window;
+package pl.tomgirl.lenis.window;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -6,7 +6,7 @@ import java.util.Arrays;
 
 import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.Drawable;
-import pl.tomgirl.lumen.Lumen;
+import pl.tomgirl.lenis.Lenis;
 import net.fabricmc.loader.api.FabricLoader;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.LWJGLException;
@@ -390,7 +390,7 @@ public class DisplaySdl {
             if (fullscreen) {
                 int display = SDL_GetPrimaryDisplay();
                 if (display == 0) {
-                    Lumen.LOG.warn("Failed to find display");
+                    Lenis.LOG.warn("Failed to find display");
                     return;
                 }
                 if (!this.fullscreen) {
@@ -405,7 +405,7 @@ public class DisplaySdl {
             SDL_SetWindowSize(handle, windowedWidth, windowedHeight);
             windowResized = true;
         } catch (Throwable t) {
-            Lumen.LOG.warn("Failed to set fullscreen: ", t);
+            Lenis.LOG.warn("Failed to set fullscreen: ", t);
         }
     }
 

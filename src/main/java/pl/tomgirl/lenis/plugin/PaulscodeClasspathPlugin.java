@@ -1,4 +1,4 @@
-package pl.tomgirl.lumen.plugin;
+package pl.tomgirl.lenis.plugin;
 
 import java.nio.file.Path;
 import java.util.List;

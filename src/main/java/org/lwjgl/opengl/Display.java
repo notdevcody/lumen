@@ -5,8 +5,8 @@ import java.nio.ByteBuffer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.LWJGLException;
-import pl.tomgirl.lumen.window.GlSurface;
-import pl.tomgirl.lumen.window.DisplaySdl;
+import pl.tomgirl.lenis.window.GlSurface;
+import pl.tomgirl.lenis.window.DisplaySdl;
 
 @SuppressWarnings("unused")
 public class Display {

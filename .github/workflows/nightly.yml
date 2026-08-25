@@ -26,5 +26,5 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v7
         with:
-          name: lumen-nightly
+          name: lenis-nightly
           path: build/libs

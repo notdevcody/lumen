@@ -1,4 +1,4 @@
-package pl.tomgirl.lumen.window;
+package pl.tomgirl.lenis.window;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;

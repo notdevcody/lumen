@@ -1,6 +1,6 @@
-package pl.tomgirl.lumen.mixin;
+package pl.tomgirl.lenis.mixin;
 
-import pl.tomgirl.lumen.plugin.CompatStub;
+import pl.tomgirl.lenis.plugin.CompatStub;
 
 import java.nio.IntBuffer;
 

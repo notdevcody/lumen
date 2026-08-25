@@ -1,4 +1,4 @@
-package pl.tomgirl.lumen.plugin;
+package pl.tomgirl.lenis.plugin;
 
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
