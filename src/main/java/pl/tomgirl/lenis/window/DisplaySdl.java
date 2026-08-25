@@ -3,6 +3,8 @@ package pl.tomgirl.lenis.window;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.Drawable;
@@ -27,12 +29,16 @@ import static org.lwjgl.sdl.SDLVideo.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.memAddress;
 
+@SuppressWarnings("unused")
 public class DisplaySdl {
     private static final DisplaySdl INSTANCE = new DisplaySdl();
 
     private SDL_Event event;
     private SDL_WindowEvent windowEvent;
     private final Drawable drawable = new SurfaceDrawable();
+
+    private final Map<String, String> hints = new HashMap<>();
+    private boolean highPixelDensity = false;
 
     private long handle = -1L;
     private GpuSurface surface;
@@ -113,8 +119,9 @@ public class DisplaySdl {
         int areaWidth = Math.max(1, Math.round((float) width * this.width / guiWidth));
         int areaHeight = Math.max(1, Math.round((float) height * this.height / guiHeight));
         int areaCursor = Math.round((float) cursor * this.width / guiWidth);
-        if (areaX == textInputX && areaY == textInputY && areaWidth == textInputWidth &&
-            areaHeight == textInputHeight && areaCursor == textInputCursor) {
+        if (areaX == textInputX && areaY == textInputY && areaWidth == textInputWidth
+            && areaHeight == textInputHeight && areaCursor == textInputCursor
+        ) {
             return;
         }
         try (MemoryStack stack = stackPush()) {
@@ -172,6 +179,38 @@ public class DisplaySdl {
 
     public int getHeight() {
         return framebufferHeight;
+    }
+
+    public int getWindowWidth() {
+        return width;
+    }
+
+    public int getWindowHeight() {
+        return height;
+    }
+
+    public float getPixelDensity() {
+        return SDL_GetWindowPixelDensity(handle);
+    }
+
+    /// Sets [SDLVideo#SDL_PROP_WINDOW_CREATE_HIGH_PIXEL_DENSITY_BOOLEAN] for window creation.
+    public void setHighPixelDensity(boolean highPixelDensity) {
+        if (isCreated()) {
+            throw new IllegalStateException("Window properties cannot be set after Display is created");
+        }
+        this.highPixelDensity = highPixelDensity;
+    }
+
+    public boolean isHighPixelDensity() {
+        return highPixelDensity;
+    }
+
+    /// Sets [SDLHints] for window creation.
+    public void setWindowHint(String hint, String value) {
+        if (isCreated()) {
+            throw new IllegalStateException("Window hints cannot be set after Display is created");
+        }
+        hints.put(hint, value);
     }
 
     @SuppressWarnings("resource")
@@ -313,6 +352,8 @@ public class DisplaySdl {
 
         checkSdlError(SDLHints.SDL_SetHint(SDLHints.SDL_HINT_MAC_BACKGROUND_APP, "0"));
         checkSdlError(SDLHints.SDL_SetHint(SDLHints.SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1"));
+        hints.forEach((k, v) -> checkSdlError(SDLHints.SDL_SetHint(k, v)));
+
         checkSdlError(SDL_SetAppMetadata(
             "Minecraft",
             FabricLoader.getInstance().getModContainer("minecraft").orElseThrow(IllegalStateException::new)
