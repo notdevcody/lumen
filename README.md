@@ -7,7 +7,7 @@ Currently only 1.8.9 on Ornithe is supported, with support for more versions com
 
 ## Downloads
 * [Latest Release](https://github.com/notdevcody/lenis/releases/latest)
-* [Latest Nightly](https://nightly.link/notdevcody/lenis/workflows/nightly/main/lumen-nightly.zip)
+* [Latest Nightly](https://nightly.link/notdevcody/lenis/workflows/nightly/main/lenis-nightly.zip)
 
 ## Features
 ### Fixes
