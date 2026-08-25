@@ -264,6 +264,8 @@ public class DisplaySdl {
             )) {
                 checkSdlError(surface != null);
                 checkSdlError(SDL_SetWindowIcon(handle, surface));
+            } catch (Exception e) {
+                Lenis.LOG.error("Failed to set window icon", e);
             }
         } finally {
             MemoryUtil.memFree(pixels);
