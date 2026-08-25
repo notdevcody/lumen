@@ -65,7 +65,7 @@ publishing {
 }
 
 fun DependencyHandlerScope.bundled(dependency: Provider<MinimalExternalModuleDependency>) {
-    add("implementation", dependency)
+    add("api", dependency)
     add("include", dependency)
 }
 
