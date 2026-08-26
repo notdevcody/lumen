@@ -3,11 +3,9 @@ package pl.tomgirl.lenis.window;
 import java.nio.ByteBuffer;
 
 import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GLUtil;
 import org.lwjgl.opengl.PixelFormat;
 import org.lwjgl.sdl.SDLPlatform;
 import org.lwjgl.sdl.SDLVideo;
-import org.lwjgl.system.Callback;
 import org.lwjgl.system.Configuration;
 import org.lwjgl.system.MemoryUtil;
 
@@ -22,7 +20,6 @@ public class GlSurface implements GpuSurface {
     private long context;
     private boolean glInitialized;
     private boolean capabilitiesCreated;
-    private Callback debugCallback;
 
     public GlSurface(PixelFormat pixelFormat) {
         this.pixelFormat = pixelFormat;
@@ -60,7 +57,6 @@ public class GlSurface implements GpuSurface {
             glInitialized = true;
             GL.createCapabilities(MemoryUtil::memCallocPointer);
             capabilitiesCreated = true;
-            debugCallback = GLUtil.setupDebugMessageCallback();
             return window;
         } catch (RuntimeException | Error throwable) {
             destroy();
@@ -105,10 +101,6 @@ public class GlSurface implements GpuSurface {
 
     @Override
     public void destroy() {
-        if (debugCallback != null) {
-            debugCallback.free();
-            debugCallback = null;
-        }
         if (capabilitiesCreated) {
             memFree(GL.getCapabilities().getAddressBuffer());
             GL.setCapabilities(null);
