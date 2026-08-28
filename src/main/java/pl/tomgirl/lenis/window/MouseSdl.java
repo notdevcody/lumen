@@ -14,10 +14,11 @@ public class MouseSdl {
     private static final int EVENT_QUEUE_SIZE = 100;
     private static final int BUTTON_COUNT = Integer.SIZE;
 
+    private static final DisplaySdl DISPLAY = DisplaySdl.instance();
     private static final MouseSdl INSTANCE = new MouseSdl();
-    private final SDL_MouseButtonEvent buttonEvent = DisplaySdl.instance().getEvent().button();
-    private final SDL_MouseMotionEvent motionEvent = DisplaySdl.instance().getEvent().motion();
-    private final SDL_MouseWheelEvent wheelEvent = DisplaySdl.instance().getEvent().wheel();
+    private final SDL_MouseButtonEvent buttonEvent = DISPLAY.getEvent().button();
+    private final SDL_MouseMotionEvent motionEvent = DISPLAY.getEvent().motion();
+    private final SDL_MouseWheelEvent wheelEvent = DISPLAY.getEvent().wheel();
     private final BoundedQueue<Event> events = new BoundedQueue<>(EVENT_QUEUE_SIZE, Event::new);
 
     private long handle;
@@ -31,7 +32,7 @@ public class MouseSdl {
     private final boolean[] buttonStates = new boolean[getButtonCount()];
 
     public void createMouse() {
-        handle = DisplaySdl.instance().getHandle();
+        handle = DISPLAY.getHandle();
         clearState();
     }
 
@@ -121,12 +122,12 @@ public class MouseSdl {
         lastX = x;
         lastY = y;
         accumDx = accumDy = 0;
-        SDL_WarpMouseInWindow(handle, (float) x, toSdlY(y));
+        SDL_WarpMouseInWindow(handle, toSdlX(x), toSdlY(y));
     }
 
     public void grabMouse(boolean grab) {
         if (!grab) {
-            SDL_WarpMouseInWindow(handle, (float) lastX, toSdlY(lastY));
+            SDL_WarpMouseInWindow(handle, toSdlX(lastX), toSdlY(lastY));
         }
         SDL_SetWindowRelativeMouseMode(handle, grab);
         grabbed = grab;
@@ -161,11 +162,11 @@ public class MouseSdl {
                 } else {
                     putMouseEvent(
                         button,
-                            down,
-                        buttonEvent.x(),
+                        down,
+                        toLwjglX(buttonEvent.x()),
                         toLwjglY(buttonEvent.y()),
                         0,
-                            timestamp
+                        timestamp
                     );
                 }
                 if (button >= 0 && button < buttonStates.length) {
@@ -184,7 +185,7 @@ public class MouseSdl {
                     putMouseEvent(
                         (byte) -1,
                         false,
-                        wheelEvent.mouse_x(),
+                        toLwjglX(wheelEvent.mouse_x()),
                         toLwjglY(wheelEvent.mouse_y()),
                         yOffset,
                         wheelEvent.timestamp()
@@ -192,10 +193,10 @@ public class MouseSdl {
                 }
             }
             case SDL_EVENT_MOUSE_MOTION -> {
-                int x = (int) (motionEvent.x());
-                int y = (int) toLwjglY(motionEvent.y());
-                double dx = motionEvent.xrel();
-                double dy = -motionEvent.yrel();
+                double x = toLwjglX(motionEvent.x());
+                double y = toLwjglY(motionEvent.y());
+                double dx = motionEvent.xrel() * scaleX();
+                double dy = -motionEvent.yrel() * scaleY();
                 if (dx != 0 || dy != 0) {
                     accumDx += dx;
                     accumDy += dy;
@@ -214,12 +215,28 @@ public class MouseSdl {
         }
     }
 
+    private float toSdlX(double lwjglX) {
+        return (float) (lwjglX / scaleX());
+    }
+
     private float toSdlY(double lwjglY) {
-        return (float) (DisplaySdl.instance().getHeight() - 1 - lwjglY);
+        return (float) ((DISPLAY.getHeight() - 1 - lwjglY) / scaleY());
+    }
+
+    private double toLwjglX(double sdlX) {
+        return sdlX * scaleX();
     }
 
     private double toLwjglY(double sdlY) {
-        return DisplaySdl.instance().getHeight() - 1 - sdlY;
+        return DISPLAY.getHeight() - 1 - sdlY * scaleY();
+    }
+
+    private double scaleX() {
+        return (double) DISPLAY.getWidth() / DISPLAY.getWindowWidth();
+    }
+
+    private double scaleY() {
+        return (double) DISPLAY.getHeight() / DISPLAY.getWindowHeight();
     }
 
     public static MouseSdl instance() {
