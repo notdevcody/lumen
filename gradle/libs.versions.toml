@@ -1,19 +1,19 @@
 [versions]
-minecraft = "1.8.9"
-feather_build = "1"
-loader = "0.19.3"
+fabric-loader = "0.19.3"
+fabric-mixin = "0.17.3+mixin.0.8.7"
 loom = "1.17.19"
-ploceus = "1.17.7"
 lwjgl = "3.4.3"
+asm = "9.10.1"
 
 [libraries]
-minecraft = { module = "com.mojang:minecraft", version.ref = "minecraft" }
-loader = { module = "net.fabricmc:fabric-loader", version.ref = "loader" }
+fabric-loader = { module = "net.fabricmc:fabric-loader", version.ref = "fabric-loader" }
+fabric-mixin = { module = "net.fabricmc:sponge-mixin", version.ref = "fabric-mixin" }
 lwjgl = { module = "org.lwjgl:lwjgl", version.ref = "lwjgl" }
 lwjgl-opengl = { module = "org.lwjgl:lwjgl-opengl", version.ref = "lwjgl" }
 lwjgl-openal = { module = "org.lwjgl:lwjgl-openal", version.ref = "lwjgl" }
 lwjgl-sdl = { module = "org.lwjgl:lwjgl-sdl", version.ref = "lwjgl" }
+asm = { module = "org.ow2.asm:asm", version.ref = "asm" }
+asm-commons = { module = "org.ow2.asm:asm-commons", version.ref = "asm" }
 
 [plugins]
-ploceus = { id = "ploceus", version.ref = "ploceus" }
-loom = { id = "net.fabricmc.fabric-loom-remap", version.ref = "loom" }
+loom = { id = "net.fabricmc.fabric-loom", version.ref = "loom" }

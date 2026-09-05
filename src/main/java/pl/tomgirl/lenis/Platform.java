@@ -29,7 +29,7 @@ public enum Platform {
             process.getErrorStream().close();
             process.getOutputStream().close();
         } catch (IOException e) {
-            Lenis.LOG.error("Couldn't open uri '{}'", uri, e);
+            Lenis.LOG.log(System.Logger.Level.ERROR, "Could not open uri " + uri, e);
         }
     }
 

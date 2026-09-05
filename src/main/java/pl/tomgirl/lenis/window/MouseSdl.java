@@ -6,6 +6,7 @@ import org.lwjgl.sdl.SDL_Event;
 import org.lwjgl.sdl.SDL_MouseButtonEvent;
 import org.lwjgl.sdl.SDL_MouseMotionEvent;
 import org.lwjgl.sdl.SDL_MouseWheelEvent;
+import pl.tomgirl.lenis.game.GameHooks;
 
 import static org.lwjgl.sdl.SDLEvents.*;
 import static org.lwjgl.sdl.SDLMouse.*;
@@ -132,6 +133,9 @@ public class MouseSdl {
         SDL_SetWindowRelativeMouseMode(handle, grab);
         grabbed = grab;
         reset();
+        if (!GameHooks.screenPatchAvailable) {
+            DISPLAY.setTextInputActive(!grab);
+        }
     }
 
     public boolean hasWheel() {

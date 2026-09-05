@@ -9,7 +9,6 @@ import java.util.Map;
 import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.Drawable;
 import pl.tomgirl.lenis.Lenis;
-import net.fabricmc.loader.api.FabricLoader;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.PointerBuffer;
@@ -60,7 +59,7 @@ public class DisplaySdl {
     private boolean focused;
     private boolean closeRequested;
 
-    private boolean textInputRequested;
+    private boolean textInputRequested = true;
     private boolean textInputActive;
     private int textInputX = -1;
     private int textInputY;
@@ -265,7 +264,7 @@ public class DisplaySdl {
                 checkSdlError(surface != null);
                 checkSdlError(SDL_SetWindowIcon(handle, surface));
             } catch (Exception e) {
-                Lenis.LOG.error("Failed to set window icon", e);
+                Lenis.LOG.log(System.Logger.Level.ERROR, "Failed to set window icon", e);
             }
         } finally {
             MemoryUtil.memFree(pixels);
@@ -356,12 +355,7 @@ public class DisplaySdl {
         checkSdlError(SDLHints.SDL_SetHint(SDLHints.SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1"));
         hints.forEach((k, v) -> checkSdlError(SDLHints.SDL_SetHint(k, v)));
 
-        checkSdlError(SDL_SetAppMetadata(
-            "Minecraft",
-            FabricLoader.getInstance().getModContainer("minecraft").orElseThrow(IllegalStateException::new)
-                .getMetadata().getVersion().getFriendlyString(),
-            "com.mojang.minecraft"
-        ));
+        checkSdlError(SDL_SetAppMetadata("Minecraft", null, "com.mojang.minecraft"));
         checkSdlError(SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_URL_STRING, "https://minecraft.net"));
         checkSdlError(SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_CREATOR_STRING, "Mojang AB"));
         checkSdlError(SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_COPYRIGHT_STRING, "Minecraft EULA: https://minecraft.net/eula"));
@@ -433,7 +427,7 @@ public class DisplaySdl {
             if (fullscreen) {
                 int display = SDL_GetPrimaryDisplay();
                 if (display == 0) {
-                    Lenis.LOG.warn("Failed to find display");
+                    Lenis.LOG.log(System.Logger.Level.WARNING, "Failed to find display");
                     return;
                 }
                 if (!this.fullscreen) {
@@ -448,7 +442,7 @@ public class DisplaySdl {
             SDL_SetWindowSize(handle, windowedWidth, windowedHeight);
             windowResized = true;
         } catch (Throwable t) {
-            Lenis.LOG.warn("Failed to set fullscreen: ", t);
+            Lenis.LOG.log(System.Logger.Level.WARNING, "Failed to set fullscreen: ", t);
         }
     }
 

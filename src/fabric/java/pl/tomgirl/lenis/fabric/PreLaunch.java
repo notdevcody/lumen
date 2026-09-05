@@ -1,4 +1,4 @@
-package pl.tomgirl.lenis;
+package pl.tomgirl.lenis.fabric;
 
 import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint;
 

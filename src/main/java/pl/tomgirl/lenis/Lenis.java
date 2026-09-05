@@ -1,8 +1,7 @@
 package pl.tomgirl.lenis;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+public final class Lenis {
+    public static final System.Logger LOG = System.getLogger("Lenis");
 
-public class Lenis {
-    public static final Logger LOG = LogManager.getLogger("Lenis");
+    private Lenis() {}
 }

@@ -1,24 +1,5 @@
 {
   "required": true,
-  "minVersion": "0.8",
-  "package": "pl.tomgirl.lenis.mixin",
-  "plugin": "pl.tomgirl.lenis.plugin.PaulscodeClasspathPlugin",
-  "compatibilityLevel": "JAVA_17",
-  "client": [
-    "AL10Mixin",
-    "ALMixin",
-    "ARBShaderObjectsMixin",
-    "GL11Mixin",
-    "GL20Mixin",
-    "GLCapabilitiesMixin",
-    "LibraryLWJGLOpenALMixin",
-    "game.MixinMinecraft_Resize",
-    "game.MixinMinecraft_TextInput",
-    "game.MixinMinecraft_Icon",
-    "game.MixinScreen_Clipboard",
-    "game.MixinTextFieldWidget_Ime"
-  ],
-  "injectors": {
-    "defaultRequire": 1
-  }
+  "compatibilityLevel": "JAVA_8",
+  "plugin": "pl.tomgirl.lenis.fabric.MixinPlugin"
 }

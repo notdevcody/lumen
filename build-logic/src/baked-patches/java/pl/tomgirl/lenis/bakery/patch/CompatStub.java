@@ -1,4 +1,4 @@
-package pl.tomgirl.lenis.plugin;
+package pl.tomgirl.lenis.bakery.patch;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

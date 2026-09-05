@@ -108,7 +108,7 @@ public class KeyboardSdl {
         if (translated != Keymap.UNMAPPED) {
             return translated;
         }
-        Lenis.LOG.warn("Untranslated key: {} ({})", key, SDLKeyboard.SDL_GetScancodeName(key));
+        Lenis.LOG.log(System.Logger.Level.WARNING, "Untranslated key: {0} ({1})", key, SDLKeyboard.SDL_GetScancodeName(key));
         return Keyboard.KEY_NONE;
     }
 
