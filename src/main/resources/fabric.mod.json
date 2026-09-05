@@ -9,7 +9,7 @@
   "environment": "client",
   "entrypoints": {
     "preLaunch": [
-      "pl.tomgirl.lenis.PreLaunch"
+      "pl.tomgirl.lenis.fabric.PreLaunch"
     ]
   },
   "mixins": [
