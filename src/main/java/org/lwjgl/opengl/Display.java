@@ -119,4 +119,8 @@ public class Display {
     public static void swapBuffers() {
         SDL.swapBuffers();
     }
+
+    public static void setParent(java.awt.Canvas o) {}
+
+    public static void setDisplayConfiguration(float gamma, float brightness, float contrast) {}
 }
